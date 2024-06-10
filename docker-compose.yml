@@ -19,34 +19,32 @@ services:
   db:
     image: mysql:5.7.13
     ports:
-      - "3306:3306"
+      - 3306:3306
     env_file:
-      .env
+      - .env
     volumes:
-      - ./dump:/docker-entrypoint-initdb.d
+      - ./dump/myDb.sql:/docker-entrypoint-initdb.d/myDb.sql
       - persistent:/var/lib/mysql
     networks:
       - default
+
   phpmyadmin:
     image: phpmyadmin
     links:
       - db:db
     ports:
       - 8000:80
-    environment:
-      MYSQL_USER: user
-      MYSQL_PASSWORD: test
-      MYSQL_ROOT_PASSWORD: test
+    env_file:
+      - .env
 
   postgres:
     image: postgres:16-alpine
-    restart: unless-stopped
     ports:
       - 5433:5432
     networks:
       - default
     volumes:
-      - ./dump/create_data.sql:/create_data.sql
+      - ./dump/pg_init.sql:/docker-entrypoint-initdb.d/pg_init.sql
       - ./data:/var/lib/postgresql/data
     env_file:
       - .env
