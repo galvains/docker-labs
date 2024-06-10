@@ -1,0 +1,56 @@
+services:
+  www:
+    build: .
+    ports:
+      - 8001:80
+    volumes:
+      - ./www:/var/www/html/
+    env_file:
+      - .env
+    links:
+      - db
+      - postgres
+    networks:
+      - default
+    depends_on:
+      - db
+      - postgres
+
+  db:
+    image: mysql:5.7.13
+    ports:
+      - "3306:3306"
+    env_file:
+      .env
+    volumes:
+      - ./dump:/docker-entrypoint-initdb.d
+      - persistent:/var/lib/mysql
+    networks:
+      - default
+  phpmyadmin:
+    image: phpmyadmin
+    links:
+      - db:db
+    ports:
+      - 8000:80
+    environment:
+      MYSQL_USER: user
+      MYSQL_PASSWORD: test
+      MYSQL_ROOT_PASSWORD: test
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - 5433:5432
+    networks:
+      - default
+    volumes:
+      - ./dump/create_data.sql:/create_data.sql
+      - ./data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+
+volumes:
+  persistent:
